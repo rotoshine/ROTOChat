@@ -1,0 +1,20 @@
+@CHARSET "UTF-8";
+
+#chatLayer{
+	width:100%;
+	height:100%;
+}
+
+
+#nowUserCountLayer{
+	overflow-x:auto;
+}
+
+#chatLog{
+	overflow-y:auto;
+}
+
+#inputMessage{
+	width: 80%
+}
+

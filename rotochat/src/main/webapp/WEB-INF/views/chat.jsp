@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="resources/css/redmond/jquery-ui-1.8.16.custom.css"></link>
 <script src="resources/js/jquery-1.6.2.min.js"></script>
 <script src="resources/js/jquery-ui-1.8.16.custom.min.js"></script>
-<script src="http://wemakeprogram.net:3000/socket.io/socket.io.js"></script>
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
 <script>
 	var user = new Object();
 	var messageCount = 0;
@@ -21,7 +21,7 @@
 	}; 
 	log("<b>서버에 접속 중입니다....잠시만 기다려주십시오....</b>");
 	
-	var socket = io.connect("http://wemakeprogram.net:3000");
+	var socket = io.connect("http://localhost:3000");
 	
 	socket.on('connect', function(){
 		log("<b>서버 접속에 성공하였습니다.</b>");

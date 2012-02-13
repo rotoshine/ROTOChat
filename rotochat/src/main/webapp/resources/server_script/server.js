@@ -4,10 +4,10 @@ var port = Number(process.env.VCAP_APP_PORT || 3000);
 var host = process.env.VCAP_APP_HOST || "localhost";
 var io = require("socket.io").listen(port, host); 
 
-// »ç¿ëÀÚ ¸ñ·ÏÀ» ´ã°í ÀÖ´Â ¿ÀºêÁ§Æ®
+// ì‚¬ìš©ì ëª©ë¡ì„ ë‹´ê³  ìˆëŠ” ì˜¤ë¸Œì íŠ¸
 var userList = new Object();
 
-// À¥¼ÒÄÏ ¿¬°á ½ÃÀÇ Ã³¸®
+// ì›¹ì†Œì¼“ ì—°ê²° ì‹œì˜ ì²˜ë¦¬
 io.sockets.on("connection", function(socket) { 
 	
 	socket.on("setUserInfo", function(msg){
@@ -29,7 +29,7 @@ io.sockets.on("connection", function(socket) {
 	});
 	
 	
-	// ¸Ş½ÃÁö ¼ö½Å ½Ã ´Ù¸¥ Å¬¶óÀÌ¾ğÆ®µé¿¡°Ôµµ ¸Ş½ÃÁö¸¦ º¸³¿
+	// ë©”ì‹œì§€ ìˆ˜ì‹  ì‹œ ë‹¤ë¥¸ í´ë¼ì´ì–¸íŠ¸ë“¤ì—ê²Œë„ ë©”ì‹œì§€ë¥¼ ë³´ëƒ„
 	socket.on("chat", function(msg) { 
 		
 		var message = validText( msg.value );
@@ -43,9 +43,9 @@ io.sockets.on("connection", function(socket) {
 		
 	}); 
 
-	// ¼ÒÄÏ ¿¬°á ÇØÁ¦½Ã ´Ù¸¥ »ç¿ëÀÚµé¿¡°Ô ´©°¡ Á¢¼ÓÀ» Á¾·áÇß´ÂÁö Åëº¸ÇÑ´Ù.
+	// ì†Œì¼“ ì—°ê²° í•´ì œì‹œ ë‹¤ë¥¸ ì‚¬ìš©ìë“¤ì—ê²Œ ëˆ„ê°€ ì ‘ì†ì„ ì¢…ë£Œí–ˆëŠ”ì§€ í†µë³´í•œë‹¤.
 	socket.on("disconnect", function() { 
-		// Á¢¼ÓÀÚ¸¦ Á¦¿ÜÇÑ »õ·Î¿î »ç¿ëÀÚ ¸ñ·Ï ¹è¿­À» »ı¼º
+		// ì ‘ì†ìë¥¼ ì œì™¸í•œ ìƒˆë¡œìš´ ì‚¬ìš©ì ëª©ë¡ ë°°ì—´ì„ ìƒì„±
 		var newUserList = [];
 		var nowRoomUserList = userList[socket.chatRoomName];
 		

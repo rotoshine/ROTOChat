@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
- * Handles requests for the application home page.
+ * 메인 컨트롤러.
+ * 대부분의 요청 처리는 이곳에서 함.
+ * @author rotoshine
+ *
  */
 @Controller
 public class MainController {
-	
 	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 	
 	/**
@@ -27,8 +29,15 @@ public class MainController {
 		return "home";
 	}
 	
+	/**
+	 * 채널에 입장한다.
+	 * @param chatRoomName	입장 채널명
+	 * @param model
+	 * @return
+	 */
 	@RequestMapping(value = "/{chatRoomName}", method = RequestMethod.GET)
-	public String chatRooms(@PathVariable String chatRoomName, Model model){
+	public String joinChatRoom(@PathVariable String chatRoomName, Model model){
+		// TODO 접속 내역 기록하는 로직을 여기에 추가하던지 server 스크립트에 추가할 것.
 		logger.info("chatRoomName : " + chatRoomName);
 		model.addAttribute("chatRoomName", chatRoomName);
 		return "chat";

@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.roto</groupId>
 	<artifactId>rotochat</artifactId>
-	<name>abc</name>
+	<name>rotochat</name>
 	<packaging>war</packaging>
 	<version>1.0.0-BUILD-SNAPSHOT</version>
 	<properties>
 		<java-version>1.6</java-version>
-		<org.springframework-version>3.0.6.RELEASE</org.springframework-version>
+		<org.springframework-version>3.1.0.RELEASE</org.springframework-version>
 		<org.aspectj-version>1.6.9</org.aspectj-version>
 		<org.slf4j-version>1.5.10</org.slf4j-version>
 	</properties>
@@ -157,4 +157,50 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<repositories>
+		<repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <layout>default</layout>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+         <repository>
+            <id>org.springframework.maven.release</id>
+            <name>Spring Maven Release Repository</name>
+            <url>http://maven.springframework.org/release</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <!-- For testing against latest Spring snapshots -->
+        <repository>
+            <id>org.springframework.maven.snapshot</id>
+            <name>Spring Maven Snapshot Repository</name>
+            <url>http://maven.springframework.org/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <!-- For developing against latest Spring milestones -->
+        <repository>
+            <id>org.springframework.maven.milestone</id>
+            <name>Spring Maven Milestone Repository</name>
+            <url>http://maven.springframework.org/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+	</repositories>
+	<url>https://github.com/rotoshine/rotochat</url>
+	<description>nodejs와 스프링 프레임워크를 이용한 채팅 애플리케이션</description>
 </project>

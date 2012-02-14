@@ -6,66 +6,61 @@ var io = require("socket.io").listen(port, host);
 
 // 사용자 목록을 담고 있는 오브젝트
 var userList = new Object();
-
+Array.prototype.removeItem = function(removeItem) {		
+	var idx = this.indexOf(removeItem);
+	return (idx<0 || idx>this.length) ? this : this.slice(0, idx).concat(this.slice(idx+1, this.length));
+};
 // 웹소켓 연결 시의 처리
 io.sockets.on("connection", function(socket) { 
 	
-	socket.on("setUserInfo", function(msg){
-		var chatRoomName = msg.chatRoomName;
-		socket.chatRoomName = chatRoomName;
-		socket.join(chatRoomName);
+	socket.on("joinChannel", function(msg){
+		var channel = msg.channel;
+		socket.join(channel);
 		
 		socket.userName = validText( msg.user.userName );
 		console.log( "<"  + socket.handshake.address.address + "> " + socket.userName + " connect.");
-		if( !userList.hasOwnProperty(chatRoomName) ){
-			userList[ chatRoomName ] = [];
+		if( !userList.hasOwnProperty(channel) ){
+			userList[channel] = new Array();
 		}
-		userList[ chatRoomName ].push( socket.userName );
+		userList[channel].push( socket.userName );
 		var msgObject = {			
 			joinUserName : socket.userName,
-			userList : userList[ chatRoomName ]
+			userList : userList[channel],
+			channel : channel
 		};
-		sendMessageToChatRoom("join", msgObject);		
+		sendMessageToChannel("join", channel, msgObject);		
 	});
 	
 	
-	// 메시지 수신 시 다른 클라이언트들에게도 메시지를 보냄
+	// 메시지 수신 시 다른 클라이언트들에게 메시지를 송신
 	socket.on("chat", function(msg) { 
 		
 		var message = validText( msg.value );
-		console.log( socket.userName + " : " + message );
 		var msgObject = {
 			userName : socket.userName,
 			msg : message,
+			channel : msg.channel,
 			receiveDate : new Date()
 		};
-		sendMessageToChatRoom("chat", msgObject);
+		sendMessageToChannel("chat", msg.channel, msgObject);
 		
 	}); 
 
-	// 소켓 연결 해제시 다른 사용자들에게 누가 접속을 종료했는지 통보한다.
-	socket.on("disconnect", function() { 
-		// 접속자를 제외한 새로운 사용자 목록 배열을 생성
-		var newUserList = [];
-		var nowRoomUserList = userList[socket.chatRoomName];
-		
-		if( nowRoomUserList != null ){		
-			for( var i = 0; i < nowRoomUserList.length; i++){			
-				if( nowRoomUserList[i] != socket.userName ){				
-					newUserList.push(nowRoomUserList[i]);
-				}
-			}
-			userList[socket.chatRoomName] = newUserList;
-		}
-		var msgObject = {
-			outUserName : socket.userName,
-			userList : newUserList
-		};
-		console.log(socket.userName + " disconnect.");
-		io.sockets.in(socket.chatRoomName).emit("out", msgObject );	
-		console.log("roomName:" + socket.chatRoomName);
+	// 채널에서 나갈 떄의 처리
+	socket.on("leave", function(msg) { 
+		leaveChannel(msg.channel);
 	}); 
+	
+	// 소켓 연결 해제시 다른 사용자들에게 누가 접속을 종료했는지 통보한다.
+	socket.on("disconnect", function(){
+		// 채널 전부에 leave emit을 날려야 한다.
+		// TODO 현재 나가는 사용자가 join해있는 채널에만 emit을 날리는 방법을 생각해보자.
+		for( var channel in userList ) {
+			console.log( channel );
+			leaveChannel(channel);
+		}
 		
+	});
 	function validText( msg ){
 		var validTargetMsg = msg.toLowerCase();
 		if( validTargetMsg.indexOf("<script>") >= 0){
@@ -77,9 +72,25 @@ io.sockets.on("connection", function(socket) {
 		return msg;
 	}
 
-	function sendMessageToChatRoom(msgType, msgObject){
-		io.sockets.in(socket.chatRoomName).emit(msgType, msgObject );
-		console.log("roomName:" + socket.chatRoomName);
+	function sendMessageToChannel(msgType, channel, msgObject){
+		io.sockets.in(channel).emit(msgType, msgObject );
+		console.log("메시지 보내는 사람 :" + socket.userName);
+		console.log("메시지 타입 :" + msgType);
+		if( msgObject.hasOwnProperty("msg") ){
+			console.log("(" + channel + ")" + msgObject.msg);
+		}		
+	}
+
+	/**
+	 * 채널에서 나간다.
+	 */
+	function leaveChannel(channel){
+		// channel 사용자 목록에서 현재 사용자를 제외하기 위한 처리.
+		userList[channel] = userList[channel].removeItem(socket.userName);		
+		io.sockets.in(channel).emit("leave", {
+			channel : channel,
+			leaveUserName : socket.userName 
+		});	
 	}
 });
 

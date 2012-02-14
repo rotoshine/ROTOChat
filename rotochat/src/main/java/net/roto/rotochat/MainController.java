@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -26,7 +25,7 @@ public class MainController {
 	@RequestMapping(value = {"", "/"} , method = RequestMethod.GET)
 	public String home(HttpServletRequest request, Model model) {
 		logger.info("request ip : " + request.getRemoteAddr() );
-		return "home";
+		return "chat";
 	}
 	
 	/**
@@ -35,12 +34,12 @@ public class MainController {
 	 * @param model
 	 * @return
 	 */
-	@RequestMapping(value = "/{chatRoomName}", method = RequestMethod.GET)
+	/*@RequestMapping(value = "/{chatRoomName}", method = RequestMethod.GET)
 	public String joinChatRoom(@PathVariable String chatRoomName, Model model){
 		// TODO 접속 내역 기록하는 로직을 여기에 추가하던지 server 스크립트에 추가할 것.
 		logger.info("chatRoomName : " + chatRoomName);
 		model.addAttribute("chatRoomName", chatRoomName);
 		return "chat";
-	}
+	}*/
 	
 }

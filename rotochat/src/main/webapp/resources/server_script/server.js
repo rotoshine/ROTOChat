@@ -9,7 +9,7 @@ var userList = new Object();
 
 // Array 객체에 특정 아이템을 삭제하는 함수 추가 
 Array.prototype.removeItem = function(item){
-	var idx = this.indexOf(channelName);
+	var idx = this.indexOf(item);
 	return (idx < 0 || idx > this.length) ? this : this.slice(0, idx).concat(this.slice(idx + 1, this.length));
 };
 

@@ -21,11 +21,18 @@
 					</li>
 				</ul>
 				<div id="system" class="channelLog">
-					<div class="log">	
+					<div>
+						시스템 관련 기능을 넣을 부분	
 					</div>					
 				</div>			
 			</div>
 			<div id="inputLayer" style="height:20px">
+				<select id="fontColor">
+					<option value="black" style="color:black" selected="selected">BLACK</option>
+					<option value="red" style="color:red">RED</option>	
+					<option value="green" style="color:green">GREEN</option>	
+					<option value="blue" style="color:blue">BLUE</option>									
+				</select>
 				<input type="text" id="inputMessage" value="" >
 			</div>
 		</div>

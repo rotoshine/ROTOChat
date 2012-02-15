@@ -1,7 +1,6 @@
-//require.paths.unshift('./node_modules');
+var port = 3000;
+var host = "localhost";
 
-var port = Number(process.env.VCAP_APP_PORT || 3000);
-var host = process.env.VCAP_APP_HOST || "localhost";
 var io = require("socket.io").listen(port, host); 
 
 var channelList = new Object();
@@ -13,24 +12,29 @@ Array.prototype.removeItem = function(item){
 	return (idx < 0 || idx > this.length) ? this : this.slice(0, idx).concat(this.slice(idx + 1, this.length));
 };
 
-// 주기적으로 생성된 채널 목록을 로깅하기 위한 부분
-function loggingStart(){
-	setInterval(function(){
-		console.log("----------------------접속자 정보-------------------------");
-		for( var userName in userList ){
-			console.log("대화명 : " + userList[userName].getName() + " , 접속 중인 채널 수 : " + userList[userName].getJoinChannelList().length );
-		}
-		console.log("------------------------------------------------------------");
-		
-		console.log("-----------------------채널 정보----------------------------");
-		for( var channelName in channelList ){
-			console.log("채널명 : " + channelName + ", 접속자 수 : " + channelList[channelName].getJoinUserList().length );
-		}
-		console.log("------------------------------------------------------------");
-	}, 10000);
+// 접속자 목록을 출력한다.
+function printUserListInfo(){
+	console.log("----------------------접속자 정보-------------------------");
+	for( var userName in userList ){
+		console.log("대화명 : " + userList[userName].getName() + " , 접속 중인 채널 수 : " + userList[userName].getJoinChannelList().length );
+	}
+	console.log("------------------------------------------------------------");
 }
 
-loggingStart();
+// 채널 목록을 출력한다.
+function printChannelListInfo(){
+	console.log("-----------------------채널 정보----------------------------");
+	for( var channelName in channelList ){
+		console.log("채널명 : " + channelName + ", 접속자 수 : " + channelList[channelName].getJoinUserList().length );
+	}
+	console.log("------------------------------------------------------------");		
+}
+
+setInterval(function(){
+	printUserListInfo();
+	printChannelListInfo();
+}, 10000);
+
 
 // 웹소켓 연결 시의 처리
 io.sockets.on("connection", function(socket) {
@@ -115,12 +119,12 @@ io.sockets.on("connection", function(socket) {
 	
 	// 메시지 수신 시 다른 클라이언트들에게 메시지를 송신
 	socket.on("chat", function(msg) {		
-		var message = validText( msg.value );
-		
+		var message = validText( msg.value );		
 		var msgObject = {
 			userName : socket.userName,
 			msg : message,
 			channel : msg.channel,
+			fontColor : msg.fontColor,
 			receiveDate : new Date()
 		};
 		sendMessageToChannel("chat", msg.channel, msgObject);

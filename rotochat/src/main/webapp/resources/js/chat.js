@@ -1,28 +1,63 @@
-var user = new Object();
-var messageCount = 0;
-var socket = io.connect("http://localhost:3000");
+Date.prototype.format = function(f) {
+    if (!this.valueOf()) return " ";
+ 
+    var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+    var d = this;
+     
+    return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function($1) {
+        switch ($1) {
+            case "yyyy": return d.getFullYear();
+            case "yy": return (d.getFullYear() % 1000).zf(2);
+            case "MM": return (d.getMonth() + 1).zf(2);
+            case "dd": return d.getDate().zf(2);
+            case "E": return weekName[d.getDay()];
+            case "HH": return d.getHours().zf(2);
+            case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
+            case "mm": return d.getMinutes().zf(2);
+            case "ss": return d.getSeconds().zf(2);
+            case "a/p": return d.getHours() < 12 ? "오전" : "오후";
+            default: return $1;
+        }
+    });
+};
+ 
+String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
+String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
+Number.prototype.zf = function(len){return this.toString().zf(len);};
 
+window.getHeight = function(){
+	return $(window).height() - 120;
+};
+window.getWidth = function(){
+	return $(window).width() - 50;
+};
+
+var user = new Object();
+var socket = io.connect("http://localhost:3000");
+socket.createUser = function(){
+	user.userName = setUserName();
+	this.emit("createUser", {
+		user : user
+	});
+};
 $(function(){		
 	$("#channelTab").tabs();
-	
+	$("#channelTab").bind("tabsselect", function(event, ui){
+		logScroll( $(ui.panel).attr("id") );
+		$("#inputMessage").focus();
+	});
 	log("<b>서버에 접속 중입니다....잠시만 기다려주십시오....</b>");
 	
 	socket.on("connect", function(){
 		log("<b>서버 접속에 성공하였습니다.</b>");
 		if( !user.hasOwnProperty("userName") ){
-			user.userName = setUserName();	
-			socket.emit("createUser", {
-				user : user
-			});				
+			socket.createUser(user);
 		}
 	});
 	
 	socket.on("alreadyUseUserName", function(){
 		alert("이미 사용 중인 대화명입니다.");
-		user.userName = setUserName();	
-		socket.emit("createUser", {
-			user : user				
-		});
+		socket.createUser(user);
 	});
 	
 	socket.on("createUserComplete", function(msgObject){
@@ -44,7 +79,11 @@ $(function(){
 	});
 	
 	socket.on("chat", function(msgObject){		
-		var chatMessage = "<span>" + msgObject.userName + " : "  + msgObject.msg + "</span>";
+		var receiveDate = new Date(msgObject.receiveDate);
+		var chatMessage = 
+				"<span class='receiveDate'>[" + receiveDate.format("HH:mm") + "]</span>" +
+				"<span class='userName'>&lt;" + msgObject.userName + "&gt; " +
+				"<span class='chatMessage' style='color:" + msgObject.fontColor +"'>"  + msgObject.msg + "</span>";
 		log(chatMessage, msgObject.channel);		
 	});
 	
@@ -65,25 +104,28 @@ $(function(){
 });
 
 function resizeWindow(){
-	var windowHeight =  $(window).height() - 120;
-	var windowWidth = $(window).width() - 50;
+	var windowHeight =  window.getHeight();
+	var windowWidth = window.getWidth();
+	$(".channelLog").css("width", windowWidth  + "px");
 	$(".channelLog").css("height", windowHeight + "px");
+	$(".log").css("width", windowWidth + "px");
 	$(".log").css("height", (windowHeight - 20 )+ "px");	
-	$(".channelLog").css("width", windowWidth - 50 + "px");
-	
 }
+
 function log(message, channel){
 	if( channel == undefined ){
 		channel = getSelectedChannelName();
 	}
 	$("#" + channel + " > .log").append(message + "<br>" );
 	console.log("#" + channel + " : " + message );
-	messageCount++;
-	
-	// 스크롤 맨 아래로 내리기
-	$("#" + channel + " > .log").scrollTop( messageCount * 20 );
-			
+	logScroll(channel);
 }; 
+
+function logScroll( channel ){
+	// 스크롤 맨 아래로 내리기
+	var messageCount = $("#" + channel + " > .log > .userName").length;
+	$("#" + channel + " > .log").scrollTop(  messageCount * 20 );
+}
 
 function ifKeycodeIsEnterkeyThenSendMessage(keyCode){
 	if( keyCode == 13 ){
@@ -101,11 +143,11 @@ function joinChannel(channelName){
 			channel : channelName
 		});		
 		 var channelChatLog = 
-				"<div id='" + channelName + "' class='channelLog'>" +
+				"<div id='" + channelName + "' class='channelLog' style='width:" + window.getWidth() + "px;height:" + window.getHeight() + "px;'>" +
 					"<div class='userList'>" +
 						"<span>현재 접속자 : </span>" +
 					"</div>" +
-					"<div class='log'>" +
+					"<div class='log' style='width:" + window.getWidth() + "px;height:" + (window.getHeight() - 20) + "px;'>" +
 					"</div>" +
 				"</div>";
 		$("#channelTab").append( channelChatLog );
@@ -151,6 +193,7 @@ function parseMessage( message ){
 		if( message != "" ){
 			socket.emit("chat", {
 				msgType : "message",
+				fontColor : $("#fontColor").val(),
 				channel : getSelectedChannelName(),
 				value : message
 			});

@@ -11,12 +11,15 @@
 }
 
 .log{
-	height:500px;
 	overflow-y:auto;
 	border: 1px solid black;
 }
+.log > span{
+	font-size: 16px;
+	font-style: 맑은고딕
+}
 
 #inputMessage{
-	width: 100%
+	width: 70%
 }
 

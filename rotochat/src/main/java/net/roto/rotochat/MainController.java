@@ -28,18 +28,4 @@ public class MainController {
 		return "chat";
 	}
 	
-	/**
-	 * 채널에 입장한다.
-	 * @param chatRoomName	입장 채널명
-	 * @param model
-	 * @return
-	 */
-	/*@RequestMapping(value = "/{chatRoomName}", method = RequestMethod.GET)
-	public String joinChatRoom(@PathVariable String chatRoomName, Model model){
-		// TODO 접속 내역 기록하는 로직을 여기에 추가하던지 server 스크립트에 추가할 것.
-		logger.info("chatRoomName : " + chatRoomName);
-		model.addAttribute("chatRoomName", chatRoomName);
-		return "chat";
-	}*/
-	
 }

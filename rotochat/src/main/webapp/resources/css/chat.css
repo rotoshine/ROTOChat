@@ -16,9 +16,14 @@
 }
 .log > span{
 	font-size: 16px;
-	font-style: 맑은고딕
+	font-style: 맑은고딕;
 }
 
+.systemMessage{
+	font-size: 16px;
+	font-style: 맑은고딕;
+	font-weight: bold;
+}
 #inputMessage{
 	width: 70%
 }

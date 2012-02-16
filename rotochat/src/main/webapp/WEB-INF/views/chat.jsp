@@ -22,7 +22,21 @@
 				</ul>
 				<div id="system" class="channelLog">
 					<div>
-						시스템 관련 기능을 넣을 부분	
+						<div>
+							현재 접속자 목록
+						</div>
+						<div id="nowUserList">
+						</div>	
+					</div>
+					<div>
+						<div>
+							현재 생성된 채널 목록
+						</div>
+						<div id="nowChannelList">
+						</div>
+					</div>
+					<div>
+						<button>채널 입장</button>
 					</div>					
 				</div>			
 			</div>

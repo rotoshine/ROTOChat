@@ -39,6 +39,14 @@ setInterval(function(){
 // 웹소켓 연결 시의 처리
 io.sockets.on("connection", function(socket) {
 	
+	socket.on("getUserList", function(message){
+		socket.emit("sendUserList", { userList : userList });
+	});
+	
+	socket.on("getChannelList", function(){
+		socket.emit("sendChannelList", { channelList : channelList });
+	});
+	
 	// 사용자 생성 요청이 들어왔을 때의 처리
 	socket.on("createUser", function(message){
 		// 이미 사용 중인 사용자 이름인 경우, 사용자명을 다시 설정하도록 함.
@@ -69,6 +77,7 @@ io.sockets.on("connection", function(socket) {
 			socket.userName = userName;
 			userList[userName] = user;
 			socket.emit("createUserComplete");
+			io.sockets.emit("createUser", { user : userName});
 		}		
 	});
 	
@@ -103,6 +112,10 @@ io.sockets.on("connection", function(socket) {
 			};
 			channelList[channelName] = channel;
 			console.log("채널이 생성되었습니다. 채널명 : " + channelName);
+			
+			io.sockets.emit("createChannel", {
+				channel : channelName
+			});
 		}
 		
 		channelList[channelName].joinUser( socket.userName );
@@ -147,6 +160,9 @@ io.sockets.on("connection", function(socket) {
 				leaveChannel(joinChannelList[i]);
 			}
 			delete userList[userName];
+			
+			// 다른 사용자들에게도 접속 해제를 통보
+			io.sockets.emit("removeUser", { user : userName });
 		}
 	});
 	function validText( msg ){
@@ -155,7 +171,7 @@ io.sockets.on("connection", function(socket) {
 			msg = "script nono  -_-";
 		}
 		if( msg != null ){
-			msg = msg.split("<").join("").split(">").join("");
+			msg = msg.split("<").join("&lt;").split(">").join("&gt;");
 		}
 		return msg;
 	}
@@ -184,6 +200,7 @@ io.sockets.on("connection", function(socket) {
 		if(channelList[channelName].isEmpty()){
 			delete channelList[channelName];
 			console.log("접속자가 없어 다음 채널은 제거됩니다. 채널명 : " + channelName);
+			io.sockets.emit("removeChannel", { channel : channelName });
 		}
 	}
 });

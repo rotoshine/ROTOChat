@@ -210,11 +210,17 @@ $(function(){
 	
 	socket.on("chat", function(msgObject){		
 		var receiveDate = new Date(msgObject.receiveDate);
-		var chatMessage = 
+		var chatMessage = msgObject.msg;
+		
+		// 자동링크 부분 현재는 하드코딩 되어있는데 나중에 별도의 패턴으로 분리할 것
+		if( chatMessage.indexOf("http://") >= 0 || chatMessage.indexOf("www.") >= 0 ){
+			chatMessage = "<a href='" + chatMessage + "' target='_blank'>" + chatMessage + "</a>";
+		}
+		var chatMessageTag = 
 				"<span class='receiveDate'>[" + receiveDate.format("HH:mm") + "]</span>" +
 				"<span class='userName'>&lt;" + msgObject.userName + "&gt; " +
-				"<span class='chatMessage' style='color:" + msgObject.fontColor +"'>"  + msgObject.msg + "</span>";
-		log(chatMessage, msgObject.channel);		
+				"<span class='chatMessage' style='color:" + msgObject.fontColor +"'>"  + chatMessage + "</span>";
+		log(chatMessageTag, msgObject.channel);		
 	});
 	
 	socket.on("disconnect", function(){
@@ -272,6 +278,7 @@ function log(message, channel){
 	if( channel == undefined ){
 		channel = getSelectedChannelName();
 	}
+		
 	$("#" + channel + " > .log").append(message + "<br>" );
 	logScroll(channel);
 }; 

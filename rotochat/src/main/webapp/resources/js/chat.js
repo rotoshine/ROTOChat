@@ -31,6 +31,37 @@ window.getHeight = function(){
 window.getWidth = function(){
 	return $(window).width() - 100;
 };
+var KeyCode = {
+	arrowUp : 38,
+	arrowDown : 40
+};
+var Channel = {
+	join : function( channelName ){
+		
+	},
+	leave : function( channelName ){
+		
+	}
+};
+var SystemPage = {
+	addUser : function(userName){
+		
+	},
+	addChannel : function(channelName){
+		$("#nowChannelList").append("<div id='" + channelName + "ChannelInfo' class='channelInfo'>" + channelName + "</div>");
+		$("#" + channelName +"ChannelInfo").hover(
+				function(){
+					$(this).addClass("channelListElementHover");
+				}, 
+				function(){
+					$(this).removeClass("channelListElementHover");
+				}
+		);
+		$("#" + channelName +"ChannelInfo").click(function(){
+			channelJoin(channelName);
+		});
+	}
+};
 
 var user = new Object();
 var socket = io.connect("http://localhost:3000");
@@ -40,7 +71,52 @@ socket.createUser = function(){
 		user : user
 	});
 };
+
+// 메시지 오브젝트
+var inputMessage = {
+	inputList : new Array(),
+	nowCursor : 0,
+	add : function( message ){
+		this.inputList.push( message );
+		this.nowCursor = this.nowCursorReset();
+	},
+	nowCursorReset : function(){
+		var inputListLength = this.inputList.length;
+		if( inputListLength == 0 ){
+			this.nowCursor = 0;
+		}else{
+			this.nowCursor = this.inputList.length - 1;
+		}
+	},
+	getCursorPrevMessage : function(){
+		if(this.nowCursor > 0 && this.nowCursor <= this.inputList.length - 1){
+			return this.inputList[--this.nowCursor];
+		}else{
+			return this.inputList[0];
+			
+		}
+	},
+	getCursorNextMessage : function(){
+		if(this.nowCursor == this.inputList.length - 1){
+			return "";
+		}else if(this.nowCursor < this.inputList.length - 1){
+			return this.inputList[++this.nowCursor];
+		}else{
+			return this.inputList[this.nowCursor];
+		}
+	},
+	getFirstInsertMessage : function(){
+		
+	},
+	getLastInputMessage : function(){
+		
+	}
+};
 $(function(){		
+	$("button").button();
+	$("#channelJoinButton").click(function(){
+		channelJoin();
+	});
 	$("#channelTab").tabs();
 	$("#channelTab").bind("tabsshow", function(event, ui){
 		logScroll( $(ui.panel).attr("id") );
@@ -75,7 +151,7 @@ $(function(){
 		$("#nowUserList").html("");
 		var userList = message.userList;
 		for( var userName in userList ){
-			$("#nowUserList").append("<div id='" + userName + "UserInfo'>" + userName + "</div>");
+			$("#nowUserList").append("<div id='" + userName + "UserInfo' class='userInfo'>" + userName + "</div>");
 		}
 		
 	});
@@ -85,7 +161,7 @@ $(function(){
 		$("#nowChannelList").html("");
 		var channelList = message.channelList;
 		for( var channelName in channelList ){
-			$("#nowChannelList").append("<div id='" + channelName + "ChannelInfo'>" + channelName + "</div>");
+			SystemPage.addChannel( channelName );			
 		}
 	});
 	
@@ -95,8 +171,7 @@ $(function(){
 	});
 	
 	socket.on("createUserComplete", function(msgObject){
-		var channelName = getJoinChannelName();	
-		joinChannel(channelName);
+		channelJoin();
 	});
 	
 	socket.on("createUser", function(data){
@@ -111,7 +186,7 @@ $(function(){
 	});
 	
 	socket.on("createChannel",function(msgObject){
-		$("#nowChannelList").append( "<div id='" + msgObject.channel + "ChannelInfo'>" + msgObject.channel + "</div>");
+		SystemPage.addChannel(msgObject.channel);
 	});
 	
 	socket.on("removeChannel", function(msgObject){
@@ -151,11 +226,41 @@ $(function(){
 	// 엔터키 누르면 메시지 보내기
 	$("#inputMessage").keydown(function(e){
 		ifKeycodeIsEnterkeyThenSendMessage(e.keyCode);
+		ifKeycodeIsArrowThenPrevInputMessageLoad(e.keyCode);
+	});
+
+	$("#fontColor").click(function(){
+		$("#colorPicker").dialog("open");
+	});
+	// colorPicker 다이얼로그 버튼 이벤트 재정의
+	$("#colorPicker").dialog("option", "buttons", {
+		"확인" : function(){
+			var selectedColorCode = $("#selectedColor").css("background-color");
+			$("#fontColor").css("background-color", selectedColorCode);
+			$(this).dialog("close");
+			$("#inputMessage").focus();
+		},
+		"닫기" : function(){
+			$(this).dialog("close");
+			$("#inputMessage").focus();
+		}
 	});
 });
 
+
+function ifKeycodeIsArrowThenPrevInputMessageLoad(keyCode){
+	switch(keyCode){
+	case KeyCode.arrowUp :
+		$("#inputMessage").val( inputMessage.getCursorPrevMessage() );
+		break;
+	case KeyCode.arrowDown :
+		$("#inputMessage").val( inputMessage.getCursorNextMessage() );
+		break;
+	}
+}
+
 function resizeWindow(){
-	var windowHeight =  window.getHeight();
+	var windowHeight =  window.getHeight() - 10;
 	var windowWidth = window.getWidth();
 	$(".channelLog").css("width", windowWidth  + "px");
 	$(".channelLog").css("height", windowHeight + "px");
@@ -177,7 +282,7 @@ function logScroll( channel ){
 	}
 	// 스크롤 맨 아래로 내리기
 	var messageCount = $("#" + channel + " > .log > .userName").length;
-	$("#" + channel + " > .log").scrollTop(  messageCount * 20 );
+	$("#" + channel + " > .log").scrollTop(  messageCount * 30 );
 }
 
 function ifKeycodeIsEnterkeyThenSendMessage(keyCode){
@@ -188,7 +293,7 @@ function ifKeycodeIsEnterkeyThenSendMessage(keyCode){
 		$("#inputMessage").focus();
 	}
 }
-function joinChannel(channelName){
+function channelJoin(channelName){
 	if( channelName == undefined ){
 		channelName = getJoinChannelName();
 	}
@@ -207,7 +312,7 @@ function joinChannel(channelName){
 				"</div>";
 		$("#channelTab").append( channelChatLog );
 		$("#channelTab").tabs("add", "#" + channelName, channelName);
-		$("#channelTab").tabs("option", "selected", $("#channelTab").tabs("length") ) ;
+		$("#channelTab").tabs("option", "selected", $("#channelTab").tabs("length") - 1) ;
 	}else{
 		log("이미 입장한 채널입니다.");
 	}
@@ -230,7 +335,7 @@ function parseMessage( message ){
 			
 			switch(runCommand){
 			case "join" :
-				joinChannel(commandValue);
+				channelJoin(commandValue);
 				break;
 			case "leave" :
 				leaveChannel(commandValue);
@@ -245,10 +350,11 @@ function parseMessage( message ){
 		if( message != "" ){
 			socket.emit("chat", {
 				msgType : "message",
-				fontColor : $("#fontColor").val(),
+				fontColor : $("#fontColor").css("background-color"),
 				channel : getSelectedChannelName(),
 				value : message
 			});
+			inputMessage.add( message );
 		}
 	}
 }

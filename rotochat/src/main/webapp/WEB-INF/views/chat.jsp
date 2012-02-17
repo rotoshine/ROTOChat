@@ -4,11 +4,13 @@
 <title>rotochat</title>
 <head>
 <meta charset="utf-8" content="">
+<link rel="stylesheet" href="resources/css/colorPicker.css"></link>
 <link rel="stylesheet" href="resources/css/chat.css"></link>
 <link rel="stylesheet" href="resources/css/redmond/jquery-ui-1.8.16.custom.css"></link>
 <script src="resources/js/jquery-1.6.2.min.js"></script>
 <script src="resources/js/jquery-ui-1.8.16.custom.min.js"></script>
 <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="resources/js/colorPicker.js"></script>	
 <script src="resources/js/chat.js"></script>	
 </head>
 <body>
@@ -36,19 +38,52 @@
 						</div>
 					</div>
 					<div>
-						<button>채널 입장</button>
+						<button id="channelJoinButton">채널 입장</button>
 					</div>					
 				</div>			
 			</div>
 			<div id="inputLayer" style="height:20px">
-				<select id="fontColor">
-					<option value="black" style="color:black" selected="selected">BLACK</option>
-					<option value="red" style="color:red">RED</option>	
-					<option value="green" style="color:green">GREEN</option>	
-					<option value="blue" style="color:blue">BLUE</option>									
-				</select>
-				<input type="text" id="inputMessage" value="" >
+				<div id="fontColor" style="float:left;margin-top:5px;margin-right:5px;cursor: pointer;"></div>
+				<input type="text" id="inputMessage" value=""  style="float: none;">
 			</div>
 		</div>
-	</div>											
+	</div>												
+	
+	<!-- color picker -->
+	<div id="colorPicker">
+		<table>
+			<tr>
+				<td>
+					<table>
+						<tr>
+							<td>
+								<div id="redColorPickerSlider" class="colorPickerSlider" ref="redColorCode"></div>
+							</td>
+							<!-- <td>
+								<input type="text"  id="redColorCode" class="colorCode" size="3" maxlength="3" value="255">
+							</td> -->
+						</tr>
+						<tr>
+							<td>
+								<div id="blueColorPickerSlider" class="colorPickerSlider" ref="blueColorCode" ></div>
+							</td>
+							<!-- <td>
+								<input type="text"  id="blueColorCode"  class="colorCode" size="3" maxlength="3" value="255">
+							</td> -->
+						</tr>
+						<tr>
+							<td>
+								<div id="greenColorPickerSlider" class="colorPickerSlider" ref="greenColorCode" ></div>
+							</td>
+						<!-- 	<td>
+								<input type="text"  id="greenColorCode"  class="colorCode" size="3" maxlength="3" value="255">
+							</td> -->
+						</tr>
+					</table>
+			</td>
+			<td>			
+				<div id="selectedColor" style="width:100px;height:100px;border:1px solid black;background-color:#000000"></div>
+			</td>
+		</table>
+	</div>
 </body>

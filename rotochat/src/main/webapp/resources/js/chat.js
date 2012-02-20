@@ -31,35 +31,90 @@ window.getHeight = function(){
 window.getWidth = function(){
 	return $(window).width() - 100;
 };
+
+
+// 키코드 관련 객체 정의
 var KeyCode = {
 	arrowUp : 38,
-	arrowDown : 40
-};
-var Channel = {
-	join : function( channelName ){
-		
-	},
-	leave : function( channelName ){
-		
+	arrowDown : 40,
+	isArrowUpOrDown : function( keyCode ){
+		return this.arrowUp == keyCode || this.arrowDown == keyCode;
 	}
 };
-var SystemPage = {
-	addUser : function(userName){
+
+// 채널 오브젝트
+var Channel = {
+	join : function( channelName ){
+		if( channelName == undefined ){
+			channelName = getJoinChannelName();
+		}
+		if( $("#" + channelName).length == 0 ){
+			socket.emit("join", {
+				user : user,
+				channel : channelName
+			});		
+			 var channelChatLog = 
+					"<div id='" + channelName + "' class='channelLog' style='width:" + window.getWidth() + "px;height:" + window.getHeight() + "px;'>" +
+						"<div class='userList'>" +
+							"<span>현재 접속자 : </span>" +
+						"</div>" +
+						"<div class='log' style='width:" + window.getWidth() + "px;height:" + (window.getHeight() - 20) + "px;'>" +
+						"</div>" +
+					"</div>";
+			$("#channelTab").append( channelChatLog );
+			$("#channelTab").tabs("add", "#" + channelName, channelName);
+			this.activateLastTab();
+			
+		}else{
+			log("이미 입장한 채널입니다.");
+		}
+	},
+	leave : function( channelName ){
+		if( channelName == undefined ){
+			channelName = getSelectedChannelName();
+		}
+		socket.emit("leave", {
+			channel : channelName
+		});
+		
+		$("#" + getSelectedChannelName()).remove();
+		$("#channelTab").tabs("remove", $("#channelTab").tabs("option", "selected"));
 		
 	},
+	
+	activateLastTab : function(){
+		$("#channelTab").tabs("option", "selected", $("#channelTab").tabs("length") - 1) ;
+	},
+};
+var SystemUtil = {
+	addInfo : function(type, infoId, clickCallback){
+		$("#now" + type + "List").append(
+				"<div id='" + infoId + "ChannelInfo' class='" + type + "Info'>" + infoId + "</div>"
+		);
+		
+	},
+	addUser : function(userName){
+		this.addInfo("User", userName, function(){
+			alert("유저 클릭");
+		});
+	},
 	addChannel : function(channelName){
-		$("#nowChannelList").append("<div id='" + channelName + "ChannelInfo' class='channelInfo'>" + channelName + "</div>");
-		$("#" + channelName +"ChannelInfo").hover(
+		this.addInfo("Channel", channelName, function() {
+			$("#" + channelName +"ChannelInfo").hover(
 				function(){
 					$(this).addClass("channelListElementHover");
 				}, 
 				function(){
 					$(this).removeClass("channelListElementHover");
 				}
-		);
-		$("#" + channelName +"ChannelInfo").click(function(){
-			channelJoin(channelName);
-		});
+			);
+			$("#" + channelName +"ChannelInfo").click(function(){
+				Channel.join(channelName);
+			});
+		});		
+	},
+	toSystemMessage : function( message ){
+		return "<span class='systemMessage'>" + message + "</span>";
 	}
 };
 
@@ -74,55 +129,49 @@ socket.createUser = function(){
 
 // 메시지 오브젝트
 var inputMessage = {
-	inputList : new Array(),
-	nowCursor : 0,
+	inputLog : new Array(),
+	nowLogCursor : -1,
 	add : function( message ){
-		this.inputList.push( message );
-		this.nowCursor = this.nowCursorReset();
+		this.inputLog.push( message );
+		this.nowLogCursor = this.getLogEndCursor();
 	},
-	nowCursorReset : function(){
-		var inputListLength = this.inputList.length;
-		if( inputListLength == 0 ){
-			this.nowCursor = 0;
-		}else{
-			this.nowCursor = this.inputList.length - 1;
-		}
+	getLogSize : function(){
+		return this.inputLog.length;
 	},
 	getCursorPrevMessage : function(){
-		if(this.nowCursor > 0 && this.nowCursor <= this.inputList.length - 1){
-			return this.inputList[--this.nowCursor];
+		if( this.nowLogCursor == -1 ){
+			return;
+		}
+		else if(this.nowLogCursor > -1 && this.nowLogCursor <= this.getLogEndCursor()){
+			return this.inputLog[--this.nowLogCursor];
 		}else{
-			return this.inputList[0];
+			return this.inputLog[0];
 			
 		}
 	},
+	getLogEndCursor : function(){
+		return this.getLogSize() - 1;
+	},
 	getCursorNextMessage : function(){
-		if(this.nowCursor == this.inputList.length - 1){
+		if(this.nowLogCursor == this.getLogEndCursor()){
 			return "";
-		}else if(this.nowCursor < this.inputList.length - 1){
-			return this.inputList[++this.nowCursor];
+		}else if(this.nowLogCursor < this.getLogEndCursor()){
+			return this.inputLog[++this.nowLogCursor];
 		}else{
-			return this.inputList[this.nowCursor];
+			return this.inputLog[this.nowLogCursor];
 		}
-	},
-	getFirstInsertMessage : function(){
-		
-	},
-	getLastInputMessage : function(){
-		
 	}
 };
 $(function(){		
 	$("button").button();
 	$("#channelJoinButton").click(function(){
-		channelJoin();
+		Channel.join();
 	});
 	$("#channelTab").tabs();
 	$("#channelTab").bind("tabsshow", function(event, ui){
 		logScroll( $(ui.panel).attr("id") );
 		$("#inputMessage").focus();
 	});
-	
 	
 	resizeWindow();
 	
@@ -131,11 +180,11 @@ $(function(){
 		logScroll();
 	});
 	
-	log("<span class='systemMessage'>서버에 접속 중입니다....잠시만 기다려주십시오....</span>");
+	log( SystemUtil.toSystemMessage("서버에 접속 중입니다....잠시만 기다려주십시오....") );
 	
 	// 서버 연결 성공 시
 	socket.on("connect", function(){
-		log("<span class='systemMessage'>서버 접속에 성공하였습니다.</span>");
+		log( SystemUtil.toSystemMessage("서버 접속에 성공하였습니다.") );
 		
 		// 사용자 목록과 채널 목록을 받아온다.
 		socket.emit("getUserList");
@@ -161,7 +210,7 @@ $(function(){
 		$("#nowChannelList").html("");
 		var channelList = message.channelList;
 		for( var channelName in channelList ){
-			SystemPage.addChannel( channelName );			
+			SystemUtil.addChannel( channelName );			
 		}
 	});
 	
@@ -171,7 +220,7 @@ $(function(){
 	});
 	
 	socket.on("createUserComplete", function(msgObject){
-		channelJoin();
+		Channel.join();
 	});
 	
 	socket.on("createUser", function(data){
@@ -186,7 +235,7 @@ $(function(){
 	});
 	
 	socket.on("createChannel",function(msgObject){
-		SystemPage.addChannel(msgObject.channel);
+		SystemUtil.addChannel(msgObject.channel);
 	});
 	
 	socket.on("removeChannel", function(msgObject){
@@ -197,7 +246,7 @@ $(function(){
 	});
 	
 	socket.on("join", function(msgObject){
-		log("<span class='systemMessage'>" + msgObject.joinUserName + "님이 접속하셨습니다.</span>", msgObject.channel);
+		log( "<span class='systemMessage'>" + msgObject.joinUserName + "님이 접속하셨습니다.</span>", msgObject.channel);
 		setUserList( msgObject.channel, msgObject.userList );	
 	});
 	
@@ -295,74 +344,17 @@ function logScroll( channel ){
 function ifKeycodeIsEnterkeyThenSendMessage(keyCode){
 	if( keyCode == 13 ){
 		var sendMessage = $("#inputMessage").val();
-		parseMessage( sendMessage );	
-		$("#inputMessage").val("");		
-		$("#inputMessage").focus();
-	}
-}
-function channelJoin(channelName){
-	if( channelName == undefined ){
-		channelName = getJoinChannelName();
-	}
-	if( $("#" + channelName).length == 0 ){
-		socket.emit("join", {
-			user : user,
-			channel : channelName
-		});		
-		 var channelChatLog = 
-				"<div id='" + channelName + "' class='channelLog' style='width:" + window.getWidth() + "px;height:" + window.getHeight() + "px;'>" +
-					"<div class='userList'>" +
-						"<span>현재 접속자 : </span>" +
-					"</div>" +
-					"<div class='log' style='width:" + window.getWidth() + "px;height:" + (window.getHeight() - 20) + "px;'>" +
-					"</div>" +
-				"</div>";
-		$("#channelTab").append( channelChatLog );
-		$("#channelTab").tabs("add", "#" + channelName, channelName);
-		$("#channelTab").tabs("option", "selected", $("#channelTab").tabs("length") - 1) ;
-	}else{
-		log("이미 입장한 채널입니다.");
-	}
-}
-function leaveChannel(channelName){
-	socket.emit("leave", {
-		channel : channelName
-	});
-	
-	$("#" + getSelectedChannelName()).remove();
-	$("#channelTab").tabs("remove", $("#channelTab").tabs("option", "selected"));
-	
-}
-function parseMessage( message ){
-	if( message.indexOf("/") == 0 ){
-		var parseTarget = message.split(" ");
-		if( parseTarget.length == 2 ){
-			var runCommand = parseTarget[0].substring(1, parseTarget[0].length);
-			var commandValue = parseTarget[1];			
-			
-			switch(runCommand){
-			case "join" :
-				channelJoin(commandValue);
-				break;
-			case "leave" :
-				leaveChannel(commandValue);
-				break;
-			}
-			
-		}else{
-			log("잘못된 명령어입니다.");
-		}
-		
-	}else{	
-		if( message != "" ){
+		if( sendMessage != "" && sendMessage != undefined ){
 			socket.emit("chat", {
 				msgType : "message",
 				fontColor : $("#fontColor").css("background-color"),
 				channel : getSelectedChannelName(),
-				value : message
+				value : sendMessage
 			});
-			inputMessage.add( message );
-		}
+			inputMessage.add( sendMessage );
+			$("#inputMessage").val("");		
+			$("#inputMessage").focus();
+		}			
 	}
 }
 

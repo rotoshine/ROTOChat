@@ -6,7 +6,8 @@
 <meta charset="utf-8" content="">
 <link rel="stylesheet" href="resources/css/colorPicker.css"></link>
 <link rel="stylesheet" href="resources/css/chat.css"></link>
-<link rel="stylesheet" href="resources/css/redmond/jquery-ui-1.8.16.custom.css"></link>
+<link rel="stylesheet" href="resources/css/custom-theme/jquery-ui-1.8.16.custom.css"></link>
+<link rel="stylesheet" href="resources/bootstrap/bootstrap.css"></link>
 <script src="resources/js/jquery-1.6.2.min.js"></script>
 <script src="resources/js/jquery-ui-1.8.16.custom.min.js"></script>
 <script src="http://localhost:3000/socket.io/socket.io.js"></script>
@@ -82,7 +83,7 @@
 					</table>
 			</td>
 			<td>			
-				<div id="selectedColor" style="width:100px;height:100px;border:1px solid black;background-color:#000000"></div>
+				<div id="selectedColor"></div>
 			</td>
 		</table>
 	</div>

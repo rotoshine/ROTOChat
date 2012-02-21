@@ -10,8 +10,8 @@ $(function(){
 	$("#colorPicker").dialog({
 		autoOpen : false,
 		title : "색상 선택",
-		width : 330,
-		height : 245,
+		width : 380,
+		height : 315,
 		buttons : {
 			"확인" : function(){
 				

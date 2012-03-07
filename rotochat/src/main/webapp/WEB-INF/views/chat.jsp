@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="resources/bootstrap/bootstrap.css"></link>
 <script src="resources/js/jquery-1.6.2.min.js"></script>
 <script src="resources/js/jquery-ui-1.8.16.custom.min.js"></script>
-<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="http://127.0.0.1:3000/socket.io/socket.io.js"></script>
 <script src="resources/js/colorPicker.js"></script>	
 <script src="resources/js/chat.js"></script>	
 </head>

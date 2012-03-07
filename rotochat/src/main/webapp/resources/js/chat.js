@@ -87,11 +87,11 @@ var Channel = {
 	},
 };
 var SystemUtil = {
-	addInfo : function(type, infoId, clickCallback){
+	addInfo : function(type, infoId, callback){
 		$("#now" + type + "List").append(
 				"<div id='" + infoId + "ChannelInfo' class='" + type + "Info'>" + infoId + "</div>"
 		);
-		
+		callback();
 	},
 	addUser : function(userName){
 		this.addInfo("User", userName, function(){
@@ -119,7 +119,7 @@ var SystemUtil = {
 };
 
 var user = new Object();
-var socket = io.connect("http://localhost:3000");
+var socket = io.connect("http://127.0.0.1:3000");
 socket.createUser = function(){
 	user.userName = setUserName();
 	this.emit("createUser", {
